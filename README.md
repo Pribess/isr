@@ -12,4 +12,4 @@ Improved Stub Resolver
 ```
 [aɪsər]
 
-isr is improved stub resolver for special circumstance
+isr is improved customizable stub resolver for special circumstance
