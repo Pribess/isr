@@ -58,3 +58,6 @@ dkms.conf
 compile_commands.json
 
 isr
+
+# JetBrains IDE stuff
+.idea/
