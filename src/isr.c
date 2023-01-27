@@ -57,12 +57,12 @@ void udp_loop() {
 	addr.sin_port = htons(53);
 
 	if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-		perror("isr: ");
+		perror("isr");
 		exit(-1);
 	}
 
 	if (bind(sockfd, (struct sockaddr *)&addr, addrlen) < 0) {
-		perror("isr: ");
+		perror("isr");
 		exit(-1);
 	}
 
