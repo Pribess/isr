@@ -54,10 +54,7 @@ dkms.conf
 # Visual Studio Code stuff
 .vscode/
 
-# Jetbrains Fleet stuff
-compile_commands.json
-
-isr
-
 # JetBrains IDE stuff
 .idea/
+
+isr

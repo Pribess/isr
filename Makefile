@@ -26,13 +26,3 @@ debug: CFLAGS += -g
 
 clean:
 	rm -f $(TARGET) *.o
-
-# compilation database generator for Jetbrains Fleet
-
-.PHONY: db
-
-db:
-	compiledb -n make
-
-cleandb:
-	rm -f compile_commands.json
