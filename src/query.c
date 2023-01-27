@@ -62,9 +62,9 @@ struct question **isr_parse_questions(unsigned char *req, struct header *header)
 		
 		q->qname = malloc(namelen * sizeof(char));
 		strcpy(q->qname, name);
-		q->qtype = ((uint16_t *)body)[cursor];
+		q->qtype = ntohs(*(uint16_t *)(body + cursor));
 		cursor += 2;
-		q->qclass = ((uint16_t *)body)[cursor];
+		q->qclass = ntohs(*(uint16_t *)(body + cursor));
 		cursor += 2;
 
 		rst[i] = q;
