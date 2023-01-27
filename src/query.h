@@ -8,6 +8,7 @@
 #ifndef ISR_QUERY
 #define ISR_QUERY
 
+#include <arpa/inet.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
