@@ -15,7 +15,7 @@
 #include <string.h>
 
 struct header {
-    uint16_t id;
+	uint16_t id;
 	unsigned char qr: 1;
 	unsigned char opcode: 4;
 	unsigned char aa: 1;

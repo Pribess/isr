@@ -12,7 +12,7 @@ struct header *isr_parse_header(unsigned char *req) {
 
 	rst = malloc(sizeof(struct header));
 
-    rst->id = ntohs(*(uint16_t *)(req + 0));
+	rst->id = ntohs(*(uint16_t *)(req + 0));
 
 	rst->qr = (req[2] & 0x80) >> 7;
 	rst->opcode = (req[2] & 0x78) >> 3;
@@ -36,7 +36,7 @@ struct question **isr_parse_questions(unsigned char *req, struct header *header)
 	struct question **rst;
 	rst = malloc(header->qdcount * sizeof(struct question *));
 
-    unsigned char *body = req + 12;
+	unsigned char *body = req + 12;
 	uint16_t cursor = 0;
 	for (int i = 0 ; i < header->qdcount ; i++) {
 		struct question *q;
