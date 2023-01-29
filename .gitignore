@@ -57,4 +57,7 @@ dkms.conf
 # JetBrains IDE stuff
 .idea/
 
+# ccls stuff
+.ccls-cache/
+
 isr
