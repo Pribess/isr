@@ -19,7 +19,7 @@
 #include <sys/select.h>
 
 #include "packet/header.h"
-#include "packet/query.h"
+#include "packet/question.h"
 
 void udp_loop();
 

@@ -5,8 +5,7 @@
 		src/packet/query.c
 */
 
-#include "header.h"
-#include "query.h"
+#include "question.h"
 
 struct question **isr_parse_questions(unsigned char *req, struct header *header) {
 	struct question **rst;

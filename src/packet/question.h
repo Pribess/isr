@@ -5,14 +5,16 @@
 		src/packet/query.h
 */
 
-#ifndef ISR_PACKET_QUERY
-#define ISR_PACKET_QUERY
+#ifndef ISR_PACKET_QUESTION
+#define ISR_PACKET_QUESTION
 
 #include <arpa/inet.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "header.h"
 
 struct question {
 	char *qname;
