@@ -22,6 +22,6 @@ struct question {
 	uint16_t qclass;
 };
 
-struct question **isr_parse_questions(unsigned char *req, struct header *header);
+struct question **isr_deserialize_questions(unsigned char *req, struct header *header);
 
 #endif

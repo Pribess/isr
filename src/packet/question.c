@@ -7,7 +7,7 @@
 
 #include "question.h"
 
-struct question **isr_parse_questions(unsigned char *req, struct header *header) {
+struct question **isr_deserialize_questions(unsigned char *req, struct header *header) {
 	struct question **rst;
 	rst = malloc(header->qdcount * sizeof(struct question *));
 

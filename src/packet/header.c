@@ -7,7 +7,7 @@
 
 #include "header.h"
 
-struct header *isr_parse_header(unsigned char *req) {
+struct header *isr_deserialize_header(unsigned char *req) {
 	struct header *rst;
 
 	rst = malloc(sizeof(struct header));

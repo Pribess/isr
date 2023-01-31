@@ -28,6 +28,6 @@ struct header {
 	uint16_t arcount;
 };
 
-struct header *isr_parse_header(unsigned char *req);
+struct header *isr_deserialize_header(unsigned char *req);
 
 #endif
