@@ -12,4 +12,4 @@ Improved Stub Resolver
 ```
 [aɪsər]
 
-isr is improved customizable stub resolver for special circumstance
+isr - improved stub resolver - aims to provide dynamic conditional forwarding, extensible with javascript, on unix-like systems.
