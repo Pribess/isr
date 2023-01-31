@@ -18,7 +18,8 @@
 #include <sys/time.h>
 #include <sys/select.h>
 
-#include "query.h"
+#include "packet/header.h"
+#include "packet/query.h"
 
 void udp_loop();
 

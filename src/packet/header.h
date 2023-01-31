@@ -2,18 +2,15 @@
 		Copyright (C) 2023
 			Pribess (Heewon Cho)
 			Jhyub	(Janghyub Seo)
-		src/query.h
+		src/packet/header.h
 */
 
-#ifndef ISR_QUERY
-#define ISR_QUERY
+#ifndef ISR_PACKET_HEADER
+#define ISR_PACKET_HEADER
 
 #include <arpa/inet.h>
-#include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
+#include <stdint.h>
 
 struct header {
 	uint16_t id;
@@ -32,13 +29,5 @@ struct header {
 };
 
 struct header *isr_parse_header(unsigned char *req);
-
-struct question {
-	char *qname;
-	uint16_t qtype;
-	uint16_t qclass;
-};
-
-struct question **isr_parse_questions(unsigned char *req, struct header *header);
 
 #endif
