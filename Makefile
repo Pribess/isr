@@ -6,7 +6,7 @@ LDFLAGS =
 TARGET = isr
 
 INCLUDEDIR = 
-SOURCES = $(shell find . -name "*.c")
+SOURCES = $(shell find ./src -name "*.c")
 OBJECTS = $(SOURCES:.c=.o)
 
 
