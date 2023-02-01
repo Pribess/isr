@@ -21,6 +21,6 @@ struct record {
     unsigned char *rdata;
 };
 
-unsigned char *isr_serialize_record(uint32_t *len, struct record *record);
+unsigned char *isr_serialize_record(size_t *len, struct record *record);
 
 #endif

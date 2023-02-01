@@ -7,7 +7,7 @@
 
 #include "answer.h"
 
-unsigned char *isr_serialize_record(uint32_t *len, struct record *record) {
+unsigned char *isr_serialize_record(size_t *len, struct record *record) {
 	/*
 		Since we will only reply to one question(please refer to question.c),
 		we could safely assume that our name will exist at index 12,

@@ -32,7 +32,7 @@ struct header *isr_deserialize_header(unsigned char *req) {
 	return rst;
 }
 
-unsigned char *isr_serialize_header(uint32_t *len, struct header *header) {
+unsigned char *isr_serialize_header(size_t *len, struct header *header) {
 	unsigned char *rst;
 	rst = malloc(12 * sizeof(char));
 	*len = 12;
