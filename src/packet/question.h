@@ -14,8 +14,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "header.h"
-
 struct question {
 	char *qname;
 	uint16_t qtype;
