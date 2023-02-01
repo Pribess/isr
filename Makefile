@@ -1,17 +1,20 @@
 CC = cc
 
 CFLAGS = -Wall
-LDFLAGS =
+LDFLAGS = -lm
 
 TARGET = isr
 
-INCLUDEDIR = 
+# INCLUDEDIR = deps/duktape/
 SOURCES = $(shell find ./src -name "*.c")
+# duktape
+SOURCES += ./deps/duktape/duktape.c
+
 OBJECTS = $(SOURCES:.c=.o)
 
 
 $(TARGET) : $(OBJECTS)
-	$(CC) $(notdir $^) $(LDFLAGS) -lm -o $@
+	$(CC) $(notdir $^) $(LDFLAGS) -o $@
 
 %.o : %.c
 	$(CC) $(INCLUDEDIR) -c $(CFLAGS) $< -o $(notdir $@)
