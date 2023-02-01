@@ -16,11 +16,14 @@
 	This results in that we won't need to understand compressed messages,
 	since it won't be possible to compress anything while writing the first question.
 */
-struct question *isr_deserialize_question(unsigned char *req, struct header *header) {
+struct question *isr_deserialize_question(unsigned char *body, uint16_t qdcount) {
+	if (qdcount != 1) {
+		return NULL;
+	}
+
 	struct question *rst;
 	rst = malloc(sizeof(struct question));
 
-	unsigned char *body = req + 12;
 	uint16_t cursor = 0;
         
 	char name[255];

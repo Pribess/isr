@@ -22,7 +22,7 @@ struct question {
 	uint16_t qclass;
 };
 
-struct question *isr_deserialize_question(unsigned char *req, struct header *header);
+struct question *isr_deserialize_question(unsigned char *body, uint16_t qdcount);
 
 unsigned char *isr_serialize_question(size_t *len, struct question *question);
 
