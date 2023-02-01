@@ -2,7 +2,7 @@
 		Copyright (C) 2023
 			Pribess (Heewon Cho)
 			Jhyub	(Janghyub Seo)
-		src/packet/query.h
+		src/packet/question.h
 */
 
 #ifndef ISR_PACKET_QUESTION
@@ -22,6 +22,6 @@ struct question {
 	uint16_t qclass;
 };
 
-struct question **isr_deserialize_questions(unsigned char *req, struct header *header);
+struct question *isr_deserialize_question(unsigned char *req, struct header *header);
 
 #endif
