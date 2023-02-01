@@ -37,7 +37,6 @@ struct question *isr_deserialize_question(unsigned char *req, struct header *hea
 		name[namelen++] = '.';
 	}
 	name[namelen-1] = '\0';
-	cursor++;
 		
 	rst->qname = malloc(namelen * sizeof(char));
 	strcpy(rst->qname, name);
