@@ -22,10 +22,10 @@ $(TARGET) : $(OBJECTS)
 
 .PHONY: all debug clean
 
-generate_js:
+js:
 	cd src/script/js && $(MAKE) all
 
-all : generate_js $(TARGET)
+all : js $(TARGET)
 
 debug: all
 debug: CFLAGS += -g
