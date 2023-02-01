@@ -30,4 +30,6 @@ struct header {
 
 struct header *isr_deserialize_header(unsigned char *req);
 
+unsigned char *isr_serialize_header(uint32_t *len, struct header *header);
+
 #endif

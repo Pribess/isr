@@ -31,3 +31,28 @@ struct header *isr_deserialize_header(unsigned char *req) {
 
 	return rst;
 }
+
+unsigned char *isr_serialize_header(uint32_t *len, struct header *header) {
+	unsigned char *rst;
+	rst = malloc(12 * sizeof(char));
+	*len = 12;
+
+	*(uint16_t *)(rst + 0) = htons(header->id);
+
+	rst[2] = (header->qr << 7) 
+		+ (header->opcode << 3)
+		+ (header->aa << 2)
+		+ (header->tc << 1)
+		+ (header->rd << 0);
+
+	rst[3] = (header->ra << 7)
+	+ (header->z << 4)
+	+ (header->rcode << 0);
+
+	*(uint16_t *)(rst + 4) = htons(header->qdcount);
+	*(uint16_t *)(rst + 6) = htons(header->ancount);
+	*(uint16_t *)(rst + 8) = htons(header->nscount);
+	*(uint16_t *)(rst + 10) = htons(header->arcount);
+
+	return rst;
+}
