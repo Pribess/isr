@@ -65,13 +65,13 @@ unsigned char *isr_serialize_question(size_t *len, struct question *question) {
 
 	int cursor = 0;
 	int labelstart = 0;
-	for(int i=0; true; i++) {
-		if(question->qname[i] == '.' || question->qname[i] == '\0') {
+	for (int i = 0; true; i++) {
+		if (question->qname[i] == '.' || question->qname[i] == '\0') {
 			rst[cursor++] = i - labelstart;
 			memcpy(rst + cursor, question->qname + labelstart, i - labelstart);		
 			cursor += (i - labelstart);
 			labelstart = i + 1;
-			if(question->qname[i] == '\0') {
+			if (question->qname[i] == '\0') {
 				rst[cursor++] = 0;
 				break;
 			}
