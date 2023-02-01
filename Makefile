@@ -11,7 +11,7 @@ OBJECTS = $(SOURCES:.c=.o)
 
 
 $(TARGET) : $(OBJECTS)
-	$(CC) $(notdir $^) $(LDFLAGS) -o $@
+	$(CC) $(notdir $^) $(LDFLAGS) -lm -o $@
 
 %.o : %.c
 	$(CC) $(INCLUDEDIR) -c $(CFLAGS) $< -o $(notdir $@)
