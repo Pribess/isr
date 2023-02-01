@@ -47,3 +47,36 @@ struct question *isr_deserialize_question(unsigned char *req, struct header *hea
 
 	return rst;
 }
+
+unsigned char *isr_serialize_question(size_t *len, struct question *question) {
+	/*
+		question->qname is a plain domain string such as "example.com",
+		while what we want is this: 7 e x a m p l e 3 c o m 0
+
+		this results in: actual qname field length = qname string length + 2 (first length ocetet, last null octet)
+	*/
+	*len = strlen(question->qname) + 2 + 4;
+
+	unsigned char *rst;
+	rst = malloc(*len * sizeof(char));
+
+	int cursor = 0;
+	int labelstart = 0;
+	for(int i=0; true; i++) {
+		if(question->qname[i] == '.' || question->qname[i] == '\0') {
+			rst[cursor++] = i - labelstart;
+			memcpy(rst + cursor, question->qname + labelstart, i - labelstart);		
+			cursor += (i - labelstart);
+			labelstart = i + 1;
+			if(question->qname[i] == '\0') {
+				rst[cursor++] = 0;
+				break;
+			}
+		}
+	}
+
+	*(uint16_t *)(rst + cursor) = htons(question->qtype);
+	*(uint16_t *)(rst + cursor + 2) = htons(question->qclass);
+
+	return rst;
+}

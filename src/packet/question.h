@@ -24,4 +24,6 @@ struct question {
 
 struct question *isr_deserialize_question(unsigned char *req, struct header *header);
 
+unsigned char *isr_serialize_question(size_t *len, struct question *question);
+
 #endif
