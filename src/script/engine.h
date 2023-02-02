@@ -2,11 +2,11 @@
 		Copyright (C) 2023
 			Pribess (Heewon Cho)
 			Jhyub	(Janghyub Seo)
-		src/script/binding.h
+		src/script/engine.h
 */
 
-#ifndef ISR_SCRIPT_BINDING
-#define ISR_SCRIPT_BINDING
+#ifndef ISR_SCRIPT_ENGINE
+#define ISR_SCRIPT_ENGINE
 
 #include "../packet/question.h"
 #include "../../deps/duktape/duktape.h"

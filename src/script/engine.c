@@ -2,10 +2,10 @@
 		Copyright (C) 2023
 			Pribess (Heewon Cho)
 			Jhyub	(Janghyub Seo)
-		src/script/binding.c
+		src/script/engine.c
 */
 
-#include "binding.h"
+#include "engine.h"
 
 duk_bool_t isr_push_question(duk_context *ctx, struct question *question) {
     duk_idx_t idx = duk_push_object(ctx);
