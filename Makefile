@@ -1,7 +1,8 @@
 CC = cc
 
+INCLUDEDIR = -I$(PWD)/deps/jerryscript/install/include
 CFLAGS = -Wall
-LDFLAGS = -lm
+LDFLAGS = -L$(PWD)/deps/jerryscript/install/lib -ljerry-core -ljerry-ext -ljerry-port-default -lm
 
 TARGET = isr
 
@@ -22,13 +23,20 @@ $(TARGET) : $(OBJECTS)
 
 .PHONY: all debug clean
 
+jerry:
+	cd deps/jerryscript && \
+	tools/build.py --builddir=$(PWD)/deps/jerryscript/build --cmake-param="-DCMAKE_INSTALL_PREFIX=$(PWD)/deps/jerryscript/install/" && \
+	$(MAKE) -C $(PWD)/deps/jerryscript/build install
+
 js:
 	cd src/script/js && $(MAKE) all
 
-all : js $(TARGET)
+all : jerry js $(TARGET)
 
 debug: all
 debug: CFLAGS += -g
 
 clean:
+	rm -rf $(PWD)/deps/jerryscript/build
+	rm -rf $(PWD)/deps/jerryscript/install
 	rm -f $(TARGET) *.o
