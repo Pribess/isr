@@ -1,3 +1,41 @@
+/* Special type to allow combination of multiple data */
+
+function Concat(rdatas) {
+    this.rdatas = rdatas;
+}
+
+Concat.prototype.toUint8Array = function() {
+    var arrays = [];
+    var length = 0;
+    for(var i in this.rdatas) {
+        arrays.push(this.rdatas[i].toUint8Array());
+        length += arrays[i].length;
+    }
+    
+    var ret = new Uint8Array(length);
+    var cursor = 0;
+    for(var i in arrays) {
+        ret.set(arrays[i], cursor);
+        cursor += arrays[i].length;
+    }
+
+    return ret;
+};
+
+
+/* Special type to allow writing raw octet-arrays */
+
+function RawRData(uint8Array) {
+    this.uint8Array = uint8Array;
+}
+
+RawRData.prototype.toUint8Array = function() {
+    return this.uint8Array;
+};
+
+/* Well-known RDATA formats, whose names and definitions implement their respective RFCs */
+
+/* RFC 1035 */
 function CharacterString(str) {
     this.str = str;
 }
@@ -10,6 +48,7 @@ CharacterString.prototype.toUint8Array = function() {
     return ret;
 }
 
+/* RFC 1035 */
 function DomainName(str) {
     if (str.slice(-1) == '.') {
         this.str = str.slice(0, -1); /* Remove trailing dot for convenience */
@@ -32,7 +71,7 @@ DomainName.prototype.toUint8Array = function() {
     return ret;
 };
 
-
+/* RFC 1035 */
 function IPV4(ip) {
     this.ip = ip;
 }
@@ -45,12 +84,4 @@ IPV4.prototype.toUint8Array = function() {
         ret.set([parseInt(octets[i])], i);
     }
     return ret;
-};
-
-function RawRData(uint8Array) {
-    this.uint8Array = uint8Array;
-}
-
-RawRData.prototype.toUint8Array = function() {
-    return this.uint8Array;
 };
