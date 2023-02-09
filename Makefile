@@ -15,7 +15,7 @@ SOURCES += ./deps/jerryscript/jerryscript.c
 SOURCES += ./deps/jerryscript/jerryscript-math.c
 SOURCES += ./deps/jerryscript/jerryscript-port-default.c
 
-SOURCES += ./deps/jerryscript/module.c
+SOURCES += ./deps/jerryscript/jerryscript-ext-module.c
 
 
 OBJECTS = $(SOURCES:.c=.o)
