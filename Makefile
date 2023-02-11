@@ -17,12 +17,13 @@ SOURCES += ./deps/jerryscript/jerryscript-ext-module.c
 
 OBJECTS = $(SOURCES:.c=.o)
 
+vpath %.c $(shell find ./src -type d) $(shell find ./deps -type d)
 
-$(TARGET) : $(OBJECTS)
-	$(CC) $(notdir $^) $(LDFLAGS) -o $@
+$(TARGET) : $(notdir $(OBJECTS))
+	$(CC) $^ $(LDFLAGS) -o $@
 
 %.o : %.c
-	$(CC) $(INCLUDEDIR) -c $(CFLAGS) $< -o $(notdir $@)
+	$(CC) $(INCLUDEDIR) -c $(CFLAGS) $< -o $@
 
 .PHONY: all debug clean js
 
