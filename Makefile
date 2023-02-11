@@ -6,15 +6,12 @@ LDFLAGS = -lm
 
 TARGET = isr
 
-# INCLUDEDIR = deps/duktape/
 SOURCES = $(shell find ./src -name "*.c")
 # duktape
 SOURCES += ./deps/duktape/duktape.c
 # jerryscript
 SOURCES += ./deps/jerryscript/jerryscript.c
-SOURCES += ./deps/jerryscript/jerryscript-math.c
-SOURCES += ./deps/jerryscript/jerryscript-port-default.c
-
+SOURCES += ./deps/jerryscript/jerryscript-port.c
 SOURCES += ./deps/jerryscript/jerryscript-ext-module.c
 
 
@@ -27,13 +24,12 @@ $(TARGET) : $(OBJECTS)
 %.o : %.c
 	$(CC) $(INCLUDEDIR) -c $(CFLAGS) $< -o $(notdir $@)
 
+.PHONY: all debug clean js
 
-.PHONY: all debug clean
+all : js $(TARGET)
 
 js:
 	cd src/script/js && $(MAKE) all
-
-all : js $(TARGET)
 
 debug: all
 debug: CFLAGS += -g
