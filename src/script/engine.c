@@ -67,7 +67,7 @@ jerry_value_t isr_script_call_resolve(jerry_value_t module, struct question *que
 
 	jerry_value_t ret = jerry_call(resolve, jerry_undefined(), args, argscnt);
 	jerry_value_free(resolve);
-	jerry_value_free(question);
+	jerry_value_free(questiono);
 	return ret;
 }
 
