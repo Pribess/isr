@@ -43,15 +43,13 @@ bool isr_module_resolve_compiled_in(const jerry_value_t canonical_name, jerry_va
 }
 
 jerryx_module_resolver_t **isr_module_resolvers(size_t *count) {
-	jerryx_module_resolver_t compiled_in = {
-		.get_canonical_name_p = NULL,
-		.resolve_p = &isr_module_resolve_compiled_in,
-	};
+	jerryx_module_resolver_t *compiled_in = malloc(sizeof(jerryx_module_resolver_t));
+	compiled_in->get_canonical_name_p = NULL;
+	compiled_in->resolve_p = &isr_module_resolve_compiled_in;
 
-	jerryx_module_resolver_t ret[] = {
-		compiled_in,
-	};
 	*count = 1;
+	jerryx_module_resolver_t **ret = malloc(*count * sizeof(jerryx_module_resolver_t));
+	ret[0] = compiled_in;
 	return ret;
 }
 
@@ -67,7 +65,7 @@ jerry_value_t isr_module_result() {
 
 	jerry_value_t rdatan = jerry_string_sz("rdata.js");
 	jerry_value_t ret = jerryx_module_resolve(rdatan, resolvers, count);
-	jerry_frame_callee(rdatan);
+	jerry_value_free(rdatan);
 
 	return ret;
 }

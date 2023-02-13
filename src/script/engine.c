@@ -73,6 +73,7 @@ jerry_value_t isr_script_call_resolve(jerry_value_t module, struct question *que
 
 jerry_value_t isr_script_result_constructors(jerry_value_t *answerc, jerry_value_t *forwardc) {
 	jerry_value_t result = isr_module_result();
+	printf("got result module\n");
 	if (jerry_value_is_exception(result)) return result;
 
 	jerry_value_t namespace = jerry_module_namespace(result);
