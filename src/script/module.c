@@ -48,7 +48,7 @@ const jerryx_module_resolver_t **isr_module_resolvers(size_t *count) {
 	compiled_in->resolve_p = &isr_module_resolve_compiled_in;
 
 	*count = 1;
-	const jerryx_module_resolver_t **ret = malloc(*count * sizeof(jerryx_module_resolver_t));
+	const jerryx_module_resolver_t **ret = malloc(*count * sizeof(jerryx_module_resolver_t *));
 	ret[0] = compiled_in;
 	return ret;
 }
