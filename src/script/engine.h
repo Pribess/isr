@@ -9,6 +9,7 @@
 #define ISR_SCRIPT_ENGINE
 
 #include <jerryscript.h>
+#include <stdlib.h>
 
 #include "module.h"
 #include "../packet/question.h"

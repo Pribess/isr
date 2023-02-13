@@ -42,26 +42,26 @@ bool isr_module_resolve_compiled_in(const jerry_value_t canonical_name, jerry_va
 	return false;
 }
 
-jerryx_module_resolver_t **isr_module_resolvers(size_t *count) {
+const jerryx_module_resolver_t **isr_module_resolvers(size_t *count) {
 	jerryx_module_resolver_t *compiled_in = malloc(sizeof(jerryx_module_resolver_t));
 	compiled_in->get_canonical_name_p = NULL;
 	compiled_in->resolve_p = &isr_module_resolve_compiled_in;
 
 	*count = 1;
-	jerryx_module_resolver_t **ret = malloc(*count * sizeof(jerryx_module_resolver_t));
+	const jerryx_module_resolver_t **ret = malloc(*count * sizeof(jerryx_module_resolver_t));
 	ret[0] = compiled_in;
 	return ret;
 }
 
 jerry_value_t isr_module_resolve_callback(const jerry_value_t specifier, const jerry_value_t referrer, void *user_p) {
 	size_t count;
-	jerryx_module_resolver_t **resolvers = isr_module_resolvers(&count);
+	const jerryx_module_resolver_t **resolvers = isr_module_resolvers(&count);
 	return jerryx_module_resolve(specifier, resolvers, count);
 }
 
 jerry_value_t isr_module_result() {
 	size_t count;
-	jerryx_module_resolver_t **resolvers = isr_module_resolvers(&count);
+	const jerryx_module_resolver_t **resolvers = isr_module_resolvers(&count);
 
 	jerry_value_t rdatan = jerry_string_sz("rdata.js");
 	jerry_value_t ret = jerryx_module_resolve(rdatan, resolvers, count);
