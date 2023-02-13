@@ -8,30 +8,37 @@
 #ifndef ISR_SCRIPT_ENGINE
 #define ISR_SCRIPT_ENGINE
 
+#include <jerryscript.h>
+
+#include "module.h"
 #include "../packet/question.h"
-#include "../../deps/duktape/duktape.h"
-#include "../../deps/duktape/duk_config.h"
 
-duk_bool_t isr_push_question(duk_context *ctx, struct question *question);
+jerry_value_t isr_script_evaluate(const jerry_char_t *script, size_t script_size);
 
-struct eval_result_answer {
+jerry_value_t isr_script_call_resolve(jerry_value_t module, struct question *question);
+
+jerry_value_t isr_script_result_constructors(jerry_value_t *answerc, jerry_value_t *forwardc);
+
+struct resolve_result_answer {
 	uint16_t type;
 	uint16_t rdlength;
 	unsigned char *rdata;
 };
 
-struct eval_result_forward {
+struct resolve_result_forward {
 	char *ip;	
 };
 
-struct eval_result {
+struct resolve_result {
 	enum { ANSWER, FORWARD, FALLBACK } type;
 	union {
-		struct eval_result_answer *answer;
-		struct eval_result_forward *forward;
+		struct resolve_result_answer *answer;
+		struct resolve_result_forward *forward;
 	} value;
 };
 
-struct eval_result *isr_evaluate(duk_context *ctx, struct question *question);
+unsigned char *isr_from_jerry_typedarray(jerry_value_t jerry_typedarray, uint16_t *length);
+
+struct resolve_result *isr_resolve_result(jerry_value_t call_result, jerry_value_t answerc, jerry_value_t forwardc);
 
 #endif

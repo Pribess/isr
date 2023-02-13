@@ -7,82 +7,168 @@
 
 #include "engine.h"
 
-duk_bool_t isr_push_question(duk_context *ctx, struct question *question) {
-    duk_idx_t idx = duk_push_object(ctx);
+jerry_value_t isr_script_evaluate(const jerry_char_t *script, size_t script_size) {
+	jerry_parse_options_t opts;
+	opts.options = JERRY_PARSE_MODULE;
 
-    duk_push_string(ctx, "name");
-    duk_push_string(ctx, question->qname);
-    duk_def_prop(ctx, idx, DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_CLEAR_WEC);
+	jerry_value_t parsed = jerry_parse(script, script_size, &opts);
+	if (jerry_value_is_exception(parsed)) return parsed;
 
-    duk_push_string(ctx, "type");
-    duk_push_uint(ctx, question->qtype);
-    duk_def_prop(ctx, idx, DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_CLEAR_WEC);
+	jerry_value_t ret = jerry_module_link(parsed, &isr_module_resolve_callback, NULL);
+	if (jerry_value_is_exception(ret)) return ret;
+	jerry_value_free(parsed);
 
-    duk_push_string(ctx, "class");
-    duk_push_uint(ctx, question->qclass);
-    duk_def_prop(ctx, idx, DUK_DEFPROP_HAVE_VALUE | DUK_DEFPROP_CLEAR_WEC);
+	jerry_value_t evaluated = jerry_module_evaluate(ret);
+	if (jerry_value_is_exception(evaluated)) return evaluated;
+	jerry_value_free(evaluated);
+
+	return ret;
 }
 
-struct eval_result *isr_evaluate(duk_context *ctx, struct question *question) {
-    int stacksize = 0;
-    /* Go reverse-alphabetic order, so we could look up from idx -2 */
-    duk_get_global_string(ctx, "Forward");
-    duk_get_global_string(ctx, "Answer");
-    stacksize += 2;
+jerry_value_t isr_object_question(struct question *question) {
+	jerry_value_t ret = jerry_object();
 
-    duk_get_global_string(ctx, "resolve");
-    isr_push_question(ctx, question);
-    duk_int_t res = duk_pcall(ctx, 1);
-    stacksize += 1;
-    if (res != DUK_EXEC_SUCCESS) goto error;
+	jerry_value_t namek = jerry_string_sz("name");
+	jerry_value_t name = jerry_object_set(ret, namek, jerry_string_sz(question->qname));
+	jerry_value_free(namek);
+	if (jerry_value_is_exception(name)) return name;
+	jerry_value_free(name);
 
-    if (duk_instanceof(ctx, -1, -2)) {
-        duk_get_prop_string(ctx, -1, "rdata"); /* answer.rdata */
-        duk_get_prop_string(ctx, -2, "type"); /* answer.type */
-        duk_push_string(ctx, "toUint8Array");
-        duk_int_t res = duk_pcall_prop(ctx, -3, 0); /* answer.rdata.toUint8Array() */
-        stacksize += 3;
-        if (res != DUK_EXEC_SUCCESS) goto error;
+	jerry_value_t typek = jerry_string_sz("type");
+	jerry_value_t type = jerry_object_set(ret, typek, jerry_number(question->qtype));
+	jerry_value_free(typek);
+	if (jerry_value_is_exception(type)) return type;
+	jerry_value_free(type);
 
-        struct eval_result_answer *ans = malloc(sizeof(struct eval_result_answer));
-        ans->type = duk_get_number(ctx, -2);
-        ans->rdata = duk_get_buffer_data(ctx, -1, &ans->rdlength);
+	jerry_value_t classk = jerry_string_sz("class");
+	jerry_value_t class = jerry_object_set(ret, classk, jerry_number(question->qclass));
+	jerry_value_free(classk);
+	if (jerry_value_is_exception(class)) return class;
+	jerry_value_free(class);
 
-        struct eval_result *rst = malloc(sizeof(struct eval_result));
-        rst->type = ANSWER;
-        rst->value.answer = ans;
-        
-        duk_pop_n(ctx, stacksize);
-        return rst;
-    } else if (duk_instanceof(ctx, -1, -3)) {
-        duk_get_prop_string(ctx, -1, "ip"); /* forward.ip */
-        stacksize += 1;
-
-        struct eval_result_forward *fwd = malloc(sizeof(struct eval_result_forward));
-        fwd->ip = duk_get_string(ctx, -1);
-
-        struct eval_result *rst = malloc(sizeof(struct eval_result));
-        rst->type = FORWARD;
-        rst->value.forward = fwd;
-
-        duk_pop_n(ctx, stacksize);
-        return rst;
-    } else {
-        printf("isr: evaluate: Expected value to be Answer or Forward, but value was \'%s\'\n", duk_safe_to_string(ctx, -1));
-
-        struct eval_result *rst = malloc(sizeof(struct eval_result));
-        rst->type = FALLBACK;
-
-        duk_pop_n(ctx, stacksize);
-        return rst;
-    }
-
-error:
-    printf("isr: evaluate: %s\n", duk_safe_to_string(ctx, -1)); // TODO: think of a better error msg?
-
-    struct eval_result *rst = malloc(sizeof(struct eval_result));
-    rst->type = FALLBACK;
-
-    duk_pop_n(ctx, stacksize);
-    return rst;
+	return ret;
 }
+
+jerry_value_t isr_script_call_resolve(jerry_value_t module, struct question *question) {
+	jerry_value_t namespace = jerry_module_namespace(module);
+	if (jerry_value_is_exception(namespace)) return namespace;
+	
+	jerry_value_t resolvek = jerry_string_sz("resolve");
+	jerry_value_t resolve = jerry_object_get(namespace, resolvek);
+	jerry_value_free(namespace);
+	jerry_value_free(resolvek);
+	if (jerry_value_is_exception(resolve)) return resolve;
+	
+	jerry_value_t questiono = isr_object_question(question);
+	if (jerry_value_is_exception(questiono)) return questiono;
+
+	jerry_value_t args[] = { questiono };
+	jerry_size_t argscnt = 1;
+
+	jerry_value_t ret = jerry_call(resolve, jerry_undefined(), args, argscnt);
+	jerry_value_free(resolve);
+	jerry_value_free(question);
+	return ret;
+}
+
+jerry_value_t isr_script_result_constructors(jerry_value_t *answerc, jerry_value_t *forwardc) {
+	jerry_value_t result = isr_module_result();
+	if (jerry_value_is_exception(result)) return result;
+
+	jerry_value_t namespace = jerry_module_namespace(result);
+	
+	jerry_value_t answerk = jerry_string_sz("Answer");
+	jerry_value_t answer = jerry_object_get(namespace, answerk);
+	jerry_value_free(answerk);
+	if (jerry_value_is_exception(answer)) return answer;
+	*answerc = answer;
+
+	jerry_value_t forwardk = jerry_string_sz("Forward");
+	jerry_value_t forward = jerry_object_get(namespace, forwardk);
+	jerry_value_free(forwardk);
+	if (jerry_value_is_exception(forward)) return forward;
+	*forwardc = forward;
+
+	jerry_value_free(namespace);
+	jerry_value_free(result);
+
+	return jerry_boolean(true);
+}
+
+unsigned char *isr_from_jerry_typedarray(jerry_value_t jerry_typedarray, uint16_t *length) {
+	// TODO
+	return NULL;
+}
+
+struct resolve_result *isr_resolve_result_exception(jerry_value_t exception) {
+	jerry_value_free(exception);
+
+	struct resolve_result *ret = malloc(sizeof(struct resolve_result));
+	ret->type = FALLBACK;
+	return ret;
+}
+
+struct resolve_result *isr_resolve_result(jerry_value_t call_result, jerry_value_t answerc, jerry_value_t forwardc) {
+	if (jerry_value_is_exception(call_result)) return isr_resolve_result_exception(jerry_undefined());
+
+	jerry_value_t isanswer = jerry_binary_op(JERRY_BIN_OP_INSTANCEOF, call_result, answerc);
+	if (jerry_value_is_exception(isanswer)) return isr_resolve_result_exception(isanswer);
+
+	jerry_value_t isforward = jerry_binary_op(JERRY_BIN_OP_INSTANCEOF, call_result, forwardc);
+	if (jerry_value_is_exception(isforward)) return isr_resolve_result_exception(isforward);
+
+	if (jerry_value_to_boolean(isanswer)) {
+		jerry_value_t typek = jerry_string_sz("type");
+		jerry_value_t type = jerry_object_get(call_result, typek);
+		jerry_value_free(typek);
+		if (jerry_value_is_exception(type)) return isr_resolve_result_exception(type);
+
+		jerry_value_t rdatak = jerry_string_sz("rdata");
+		jerry_value_t rdata = jerry_object_get(call_result, rdatak);
+		jerry_value_free(rdatak);
+		if (jerry_value_is_exception(rdata)) return isr_resolve_result_exception(rdata);
+
+		jerry_value_t touint8arrayk = jerry_string_sz("toUint8Array");
+		jerry_value_t touint8array = jerry_object_get(rdata, touint8arrayk);
+		jerry_value_free(touint8arrayk);
+		if (jerry_value_is_exception(touint8array)) return isr_resolve_result_exception(touint8array);
+
+		jerry_value_t typedarray = jerry_call(touint8array, call_result, NULL, 0);
+		if (jerry_value_is_exception(typedarray)) return isr_resolve_result_exception(typedarray);
+		if (!jerry_value_is_typedarray(typedarray)) {
+			jerry_value_t exception = jerry_throw(jerry_string_sz("toUint8Array didn't return TypedArray"), false);
+			return isr_resolve_result_exception(exception);
+		}
+
+		uint16_t rdlength;
+		unsigned char* value = isr_from_jerry_typedarray(typedarray, &rdlength);
+		jerry_value_free(typedarray);
+
+		struct resolve_result *ret = malloc(sizeof(struct resolve_result));
+		ret->type = ANSWER;
+		ret->value.answer->type = jerry_value_as_uint32(type);
+		ret->value.answer->rdlength = rdlength;
+		ret->value.answer->rdata = value;
+
+		return ret;
+	} else if (jerry_value_to_boolean(isforward)) {
+		jerry_value_t ipk = jerry_string_sz("ip");
+		jerry_value_t ip = jerry_object_get(call_result, ipk);
+		jerry_value_free(ipk);
+		if (jerry_value_is_exception(ip)) return isr_resolve_result_exception(ip);
+
+		char buff[16];
+		jerry_size_t length = jerry_string_to_buffer(ip, JERRY_ENCODING_UTF8, buff, 16);	
+		buff[length] = '\0';
+
+		struct resolve_result *ret = malloc(sizeof(struct resolve_result));
+		ret->type = FORWARD;
+		ret->value.forward->ip = buff;
+	} else {
+		struct resolve_result *ret = malloc(sizeof(struct resolve_result));
+		ret->type = FALLBACK;
+		
+		return ret;
+	}
+}
+	
