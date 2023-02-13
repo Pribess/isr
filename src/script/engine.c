@@ -11,12 +11,11 @@ jerry_value_t isr_script_evaluate(const jerry_char_t *script, size_t script_size
 	jerry_parse_options_t opts;
 	opts.options = JERRY_PARSE_MODULE;
 
-	jerry_value_t parsed = jerry_parse(script, script_size, &opts);
-	if (jerry_value_is_exception(parsed)) return parsed;
-
-	jerry_value_t ret = jerry_module_link(parsed, &isr_module_resolve_callback, NULL);
+	jerry_value_t ret = jerry_parse(script, script_size, &opts);
 	if (jerry_value_is_exception(ret)) return ret;
-	jerry_value_free(parsed);
+
+	jerry_value_t linked = jerry_module_link(ret, &isr_module_resolve_callback, NULL);
+	if (jerry_value_is_exception(linked)) return linked;
 
 	jerry_value_t evaluated = jerry_module_evaluate(ret);
 	if (jerry_value_is_exception(evaluated)) return evaluated;
