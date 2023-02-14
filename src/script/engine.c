@@ -133,7 +133,7 @@ struct resolve_result *isr_resolve_result(jerry_value_t call_result, jerry_value
 		jerry_value_free(touint8arrayk);
 		if (jerry_value_is_exception(touint8array)) return isr_resolve_result_exception(touint8array);
 
-		jerry_value_t typedarray = jerry_call(touint8array, call_result, NULL, 0);
+		jerry_value_t typedarray = jerry_call(touint8array, rdata, NULL, 0);
 		if (jerry_value_is_exception(typedarray)) return isr_resolve_result_exception(typedarray);
 		if (!jerry_value_is_typedarray(typedarray)) {
 			jerry_value_t exception = jerry_throw(jerry_string_sz("toUint8Array didn't return TypedArray"), false);
