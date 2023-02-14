@@ -16,6 +16,7 @@ jerry_value_t isr_script_evaluate(const jerry_char_t *script, size_t script_size
 
 	jerry_value_t linked = jerry_module_link(ret, &isr_module_resolve_callback, NULL);
 	if (jerry_value_is_exception(linked)) return linked;
+	jerry_value_free(linked);
 
 	jerry_value_t evaluated = jerry_module_evaluate(ret);
 	if (jerry_value_is_exception(evaluated)) return evaluated;
@@ -72,7 +73,6 @@ jerry_value_t isr_script_call_resolve(jerry_value_t module, struct question *que
 
 jerry_value_t isr_script_result_constructors(jerry_value_t *answerc, jerry_value_t *forwardc) {
 	jerry_value_t result = isr_module_result();
-	printf("got result module\n");
 	if (jerry_value_is_exception(result)) return result;
 
 	jerry_value_t namespace = jerry_module_namespace(result);
@@ -96,12 +96,27 @@ jerry_value_t isr_script_result_constructors(jerry_value_t *answerc, jerry_value
 }
 
 unsigned char *isr_from_jerry_typedarray(jerry_value_t jerry_typedarray, uint16_t *length) {
-	// TODO
-	return NULL;
+    jerry_length_t bufflength, buffoffset;
+    jerry_value_t buff = jerry_typedarray_buffer(jerry_typedarray, &buffoffset, &bufflength);
+    if (jerry_value_is_exception(buff)) return NULL;
+
+    unsigned char *ret = malloc(bufflength * sizeof(unsigned char));
+    jerry_length_t read = jerry_arraybuffer_read(buff, buffoffset, ret, bufflength);
+    *length = read;
+
+    jerry_value_free(buff);
+
+    return ret;
 }
 
 struct resolve_result *isr_resolve_result_exception(jerry_value_t exception) {
-	jerry_value_free(exception);
+	jerry_value_t str = jerry_value_to_string(jerry_exception_value(exception, true));
+    jerry_size_t strsize = jerry_string_size(str, JERRY_ENCODING_UTF8);
+    jerry_char_t *buff = malloc(strsize * sizeof(jerry_char_t));
+	jerry_size_t buffsize = jerry_string_to_buffer(str, JERRY_ENCODING_UTF8, buff, jerry_string_size(str, JERRY_ENCODING_UTF8));
+	buff[buffsize] = '\0';
+	printf("%s\n", buff);
+    free(buff);
 
 	struct resolve_result *ret = malloc(sizeof(struct resolve_result));
 	ret->type = FALLBACK;
@@ -122,21 +137,33 @@ struct resolve_result *isr_resolve_result(jerry_value_t call_result, jerry_value
 		jerry_value_t type = jerry_object_get(call_result, typek);
 		jerry_value_free(typek);
 		if (jerry_value_is_exception(type)) return isr_resolve_result_exception(type);
+		if (!jerry_value_is_number(type)) {
+			jerry_value_t exception = jerry_throw_value(jerry_string_sz("type is not a number"), true);
+			return isr_resolve_result_exception(exception);
+		}
 
 		jerry_value_t rdatak = jerry_string_sz("rdata");
 		jerry_value_t rdata = jerry_object_get(call_result, rdatak);
 		jerry_value_free(rdatak);
 		if (jerry_value_is_exception(rdata)) return isr_resolve_result_exception(rdata);
+		if (!jerry_value_is_object(rdata)) {
+			jerry_value_t exception = jerry_throw_value(jerry_string_sz("rdata is not an object"), true);
+			return isr_resolve_result_exception(exception);
+		}
 
 		jerry_value_t touint8arrayk = jerry_string_sz("toUint8Array");
 		jerry_value_t touint8array = jerry_object_get(rdata, touint8arrayk);
 		jerry_value_free(touint8arrayk);
 		if (jerry_value_is_exception(touint8array)) return isr_resolve_result_exception(touint8array);
+		if (!jerry_value_is_function(touint8array)) {
+			jerry_value_t exception = jerry_throw_value(jerry_string_sz("toUint8Array is not a function"), true);
+			return isr_resolve_result_exception(exception);
+		}
 
 		jerry_value_t typedarray = jerry_call(touint8array, rdata, NULL, 0);
 		if (jerry_value_is_exception(typedarray)) return isr_resolve_result_exception(typedarray);
 		if (!jerry_value_is_typedarray(typedarray)) {
-			jerry_value_t exception = jerry_throw(jerry_string_sz("toUint8Array didn't return TypedArray"), false);
+			jerry_value_t exception = jerry_throw_value(jerry_string_sz("toUint8Array didn't return TypedArray"), true);
 			return isr_resolve_result_exception(exception);
 		}
 
@@ -146,9 +173,13 @@ struct resolve_result *isr_resolve_result(jerry_value_t call_result, jerry_value
 
 		struct resolve_result *ret = malloc(sizeof(struct resolve_result));
 		ret->type = ANSWER;
-		ret->value.answer->type = jerry_value_as_uint32(type);
-		ret->value.answer->rdlength = rdlength;
-		ret->value.answer->rdata = value;
+
+        struct resolve_result_answer *ans = malloc(sizeof(struct resolve_result_answer));
+        ans->type = jerry_value_as_uint32(type);
+        ans->rdlength = rdlength;
+        ans->rdata = value;
+
+        ret->value.answer = ans;
 
 		return ret;
 	} else if (jerry_value_to_boolean(isforward)) {
@@ -157,13 +188,19 @@ struct resolve_result *isr_resolve_result(jerry_value_t call_result, jerry_value
 		jerry_value_free(ipk);
 		if (jerry_value_is_exception(ip)) return isr_resolve_result_exception(ip);
 
-		char buff[16];
-		jerry_size_t length = jerry_string_to_buffer(jerry_value_to_string(ip), JERRY_ENCODING_UTF8, buff, 16);	
+		char *buff = malloc(16 * sizeof(char));
+		jerry_size_t length = jerry_string_to_buffer(jerry_value_to_string(ip), JERRY_ENCODING_UTF8, (jerry_char_t *) buff, 16);	
 		buff[length] = '\0';
 
 		struct resolve_result *ret = malloc(sizeof(struct resolve_result));
 		ret->type = FORWARD;
-		ret->value.forward->ip = buff;
+
+        struct resolve_result_forward *fwd = malloc(sizeof(struct resolve_result_forward));
+        fwd->ip = buff;
+
+        ret->value.forward = fwd;
+
+        return ret;
 	} else {
 		struct resolve_result *ret = malloc(sizeof(struct resolve_result));
 		ret->type = FALLBACK;

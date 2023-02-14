@@ -1,4 +1,4 @@
-const Type = {
+export const Type = {
     A: 1,
     NS: 2,
     MD: 3,

@@ -1,8 +1,8 @@
-function Answer(type, rdata) {
+export function Answer(type, rdata) {
     this.type = type;
     this.rdata = rdata;
 }
 
-function Forward(ip) {
+export function Forward(ip) {
     this.ip = ip;
 }

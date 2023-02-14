@@ -1,6 +1,8 @@
+import { TextEncoder } from "util.js"
+
 /* Special type to allow combination of multiple data */
 
-function Concat(rdatas) {
+export function Concat(rdatas) {
     this.rdatas = rdatas;
 }
 
@@ -25,7 +27,7 @@ Concat.prototype.toUint8Array = function() {
 
 /* Special type to allow writing raw octet-arrays */
 
-function RawRData(uint8Array) {
+export function RawRData(uint8Array) {
     this.uint8Array = uint8Array;
 }
 
@@ -36,7 +38,7 @@ RawRData.prototype.toUint8Array = function() {
 /* Well-known RDATA formats, whose names and definitions implement their respective RFCs */
 
 /* RFC 1035 */
-function CharacterString(str) {
+export function CharacterString(str) {
     this.str = str;
 }
 
@@ -49,7 +51,7 @@ CharacterString.prototype.toUint8Array = function() {
 }
 
 /* RFC 1035 */
-function DomainName(str) {
+export function DomainName(str) {
     if (str.slice(-1) == '.') {
         this.str = str.slice(0, -1); /* Remove trailing dot for convenience */
     } else {
@@ -72,7 +74,7 @@ DomainName.prototype.toUint8Array = function() {
 };
 
 /* RFC 1035 */
-function IPV4(ip) {
+export function IPV4(ip) {
     this.ip = ip;
 }
 
