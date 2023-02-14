@@ -62,5 +62,6 @@ src/script/js/*.h
 
 # ccls stuff
 .ccls-cache/
+.ccls
 
 isr
