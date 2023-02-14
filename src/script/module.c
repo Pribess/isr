@@ -63,9 +63,9 @@ jerry_value_t isr_module_result() {
 	size_t count;
 	const jerryx_module_resolver_t **resolvers = isr_module_resolvers(&count);
 
-	jerry_value_t rdatan = jerry_string_sz("rdata.js");
-	jerry_value_t ret = jerryx_module_resolve(rdatan, resolvers, count);
-	jerry_value_free(rdatan);
+	jerry_value_t resultn = jerry_string_sz("result.js");
+	jerry_value_t ret = jerryx_module_resolve(resultn, resolvers, count);
+	jerry_value_free(resultn);
 
 	return ret;
 }
