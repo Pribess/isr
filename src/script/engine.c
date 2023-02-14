@@ -158,7 +158,7 @@ struct resolve_result *isr_resolve_result(jerry_value_t call_result, jerry_value
 		if (jerry_value_is_exception(ip)) return isr_resolve_result_exception(ip);
 
 		char buff[16];
-		jerry_size_t length = jerry_string_to_buffer(ip, JERRY_ENCODING_UTF8, buff, 16);	
+		jerry_size_t length = jerry_string_to_buffer(jerry_value_to_string(ip), JERRY_ENCODING_UTF8, buff, 16);	
 		buff[length] = '\0';
 
 		struct resolve_result *ret = malloc(sizeof(struct resolve_result));
