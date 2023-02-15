@@ -44,7 +44,7 @@ export class CharacterString {
 
     toUint8Array() {
         let ret = new Uint8Array(this.str.length+1);
-        var encoder = new TextEncoder();
+        let encoder = new TextEncoder();
         ret.set([this.str.length], 0);
         ret.set(encoder.encode(this.str), 1);
         return ret;
