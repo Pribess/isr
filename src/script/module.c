@@ -6,7 +6,6 @@
 */
 
 #include "module.h"
-#include "native/encode.h"
 
 #include "js/rdata_js.h"
 #include "js/result_js.h"
