@@ -1,8 +1,12 @@
-export function Answer(type, rdata) {
-    this.type = type;
-    this.rdata = rdata;
+export class Answer {
+    constructor(type, rdata) {
+        this.type = type;
+        this.rdata = rdata;
+    }
 }
 
-export function Forward(ip) {
-    this.ip = ip;
+export class Forward {
+    constructor(ip) {
+        this.ip = ip;
+    }
 }

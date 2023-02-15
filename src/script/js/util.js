@@ -1,12 +1,12 @@
 import { nativeEncode } from "native/encode"
 
-export function TextEncoder() {
+export class TextEncoder {
+    get encoding() {
+        return "utf-8";
+    }
 
+    encode(str) {
+        return nativeEncode(str);
+    }
 }
-
-TextEncoder.prototype.encoding = "utf-8";
-
-TextEncoder.prototype.encode = function(string) {
-    return nativeEncode(string);
-};
 
