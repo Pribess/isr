@@ -9,4 +9,3 @@ export class TextEncoder {
         return nativeEncode(str);
     }
 }
-

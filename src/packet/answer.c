@@ -32,4 +32,3 @@ unsigned char *isr_serialize_record(size_t *len, struct record *record) {
 
 	return rst;
 }
-
