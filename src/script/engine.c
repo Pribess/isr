@@ -202,10 +202,9 @@ struct resolve_result *isr_from_call_result(jerry_value_t call_result, jerry_val
 
 		return ret;
 	} else {
-		struct resolve_result *ret = malloc(sizeof(struct resolve_result));
-		ret->type = FALLBACK;
-		
-		return ret;
+		jerry_value_t exception = jerry_throw_value(jerry_string_sz("Expected resolve to return either Answer or Forward, but none of them was returned"), true);
+
+		return isr_handle_jerry_exception(exception);
 	}
 }
 
