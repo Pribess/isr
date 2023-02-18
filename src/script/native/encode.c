@@ -19,7 +19,7 @@ static jerry_value_t isr_native_encode(const jerry_call_info_t *call_info_p, con
 	jerry_value_free(string);
 	buff[copied] = '\0';
 
-	jerry_value_t arraybuffer = jerry_arraybuffer_external(buff, copied, NULL);
+	jerry_value_t arraybuffer = jerry_arraybuffer_external(buff, copied, buff);
 
 	jerry_value_t ret = jerry_typedarray_with_buffer_span(JERRY_TYPEDARRAY_UINT8, arraybuffer, 0, copied);
 	jerry_value_free(arraybuffer);
