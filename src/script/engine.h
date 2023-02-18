@@ -15,11 +15,7 @@
 #include "module.h"
 #include "../packet/question.h"
 
-jerry_value_t isr_script_evaluate(const jerry_char_t *script, size_t script_size);
-
-jerry_value_t isr_script_call_resolve(jerry_value_t module, struct question *question);
-
-jerry_value_t isr_script_result_constructors(jerry_value_t *answerc, jerry_value_t *forwardc);
+unsigned char *isr_from_jerry_typedarray(jerry_value_t jerry_typedarray, uint16_t *length);
 
 struct resolve_result_answer {
 	uint16_t type;
@@ -39,8 +35,8 @@ struct resolve_result {
 	} value;
 };
 
-unsigned char *isr_from_jerry_typedarray(jerry_value_t jerry_typedarray, uint16_t *length);
+jerry_value_t isr_script_evaluate(const jerry_char_t *script, size_t script_size);
 
-struct resolve_result *isr_resolve_result(jerry_value_t call_result, jerry_value_t answerc, jerry_value_t forwardc);
+struct resolve_result *isr_script_run(jerry_value_t module, struct question *question);
 
 #endif
