@@ -80,8 +80,8 @@ bool isr_module_resolve_file(const jerry_value_t canonical_name, jerry_value_t *
 	buff[size] = '\0';
 
 	FILE *file = fopen((char *)buff, "r");
-	if (file == NULL)
-		return false;
+	if (file == NULL) return false;
+
 	fseek(file, 0L, SEEK_END);
 	long sz = ftell(file);
 	rewind(file);
