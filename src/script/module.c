@@ -71,7 +71,12 @@ jerry_value_t isr_module_get_canonical_name_file(const jerry_value_t name) {
 	jerry_value_t getter_script_dir = jerry_string_sz(isr_config.getter_script_dir);
 	jerry_value_t slash = jerry_string_sz("/");
 
-	return jerry_binary_op(JERRY_BIN_OP_ADD, jerry_binary_op(JERRY_BIN_OP_ADD, getter_script_dir, slash), name);
+	jerry_value_t ret = jerry_binary_op(JERRY_BIN_OP_ADD, jerry_binary_op(JERRY_BIN_OP_ADD, getter_script_dir, slash), name);
+
+	jerry_value_free(getter_script_dir);
+	jerry_value_free(slash);
+
+	return ret;
 };
 
 bool isr_module_resolve_file(const jerry_value_t canonical_name, jerry_value_t *result) {
