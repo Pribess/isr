@@ -9,6 +9,7 @@
 
 #include "js/rdata_js.h"
 #include "js/result_js.h"
+#include "js/state_js.h"
 #include "js/type_js.h"
 #include "js/util_js.h"
 
@@ -46,6 +47,12 @@ bool isr_module_resolve_compiled_in(const jerry_value_t canonical_name, jerry_va
 		}
 	} else if (strcmp((char *) buff, "result.js") == 0) {
 		jerry_value_t ret = jerry_parse(result_js, result_js_len, &opts);
+		if (!jerry_value_is_exception(ret)) {
+			*result = ret;
+			return true;
+		}
+	} else if (strcmp((char *) buff, "state.js") == 0) {
+		jerry_value_t ret = jerry_parse(state_js, state_js_len, &opts);
 		if (!jerry_value_is_exception(ret)) {
 			*result = ret;
 			return true;
@@ -145,3 +152,15 @@ jerry_value_t isr_module_result() {
 
 	return ret;
 }
+
+jerry_value_t isr_module_state() {
+	size_t count;
+	const jerryx_module_resolver_t **resolvers = isr_module_resolvers(&count);
+
+	jerry_value_t staten = jerry_string_sz("state.js");
+	jerry_value_t ret = jerryx_module_resolve(staten, resolvers, count);
+	jerry_value_free(staten);
+
+	return ret;
+}
+

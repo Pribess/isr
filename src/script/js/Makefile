@@ -4,6 +4,9 @@ rdata_js.h: rdata.js
 result_js.h: result.js
 	xxd -i result.js > result_js.h
 
+state_js.h: state.js
+	xxd -i state.js > state_js.h
+
 type_js.h: type.js
 	xxd -i type.js > type_js.h
 
@@ -12,4 +15,4 @@ util_js.h: util.js
 
 .PHONY: all
 
-all: rdata_js.h result_js.h type_js.h util_js.h
+all: rdata_js.h result_js.h state_js.h type_js.h util_js.h

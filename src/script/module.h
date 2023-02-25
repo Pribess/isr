@@ -21,4 +21,6 @@ jerry_value_t isr_module_resolve_callback(const jerry_value_t specifier, const j
 
 jerry_value_t isr_module_result();
 
+jerry_value_t isr_module_state();
+
 #endif
