@@ -76,7 +76,7 @@ jerry_value_t isr_script_call(jerry_value_t module, struct question *question, s
 	jerry_value_t questiono = isr_script_object_question(question);
 	if (jerry_value_is_exception(questiono)) return questiono;
 
-	jerry_value_t stateo = isr_script_state(providers, providers_size);
+	jerry_value_t stateo = isr_script_object_state(providers, providers_size);
 	if (jerry_value_is_exception(stateo)) return stateo;
 
 	jerry_value_t args[] = { questiono, stateo };

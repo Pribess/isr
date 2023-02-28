@@ -22,6 +22,6 @@ struct state_provider {
 
 struct state_provider **isr_script_state_providers(size_t *size);
 
-jerry_value_t isr_script_state(struct state_provider **providers, size_t size);
+jerry_value_t isr_script_object_state(struct state_provider **providers, size_t size);
 
 #endif

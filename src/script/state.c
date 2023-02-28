@@ -135,7 +135,7 @@ void isr_script_set_data_on_path(char **path, size_t path_length, jerry_value_t 
 	}
 }
 
-jerry_value_t isr_script_state(struct state_provider **providers, size_t size) {
+jerry_value_t isr_script_object_state(struct state_provider **providers, size_t size) {
 	jerry_value_t ret = jerry_object();
 
 	for (int i = 0; i < size; i++) {
