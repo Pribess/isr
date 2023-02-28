@@ -63,7 +63,7 @@ jerry_value_t isr_script_object_question(struct question *question) {
 	return ret;
 }
 
-jerry_value_t isr_script_call(jerry_value_t module, struct question *question) {
+jerry_value_t isr_script_call(jerry_value_t module, struct question *question, struct state_provider **providers, size_t providers_size) {
 	jerry_value_t namespace = jerry_module_namespace(module);
 	if (jerry_value_is_exception(namespace)) return namespace;
 	
@@ -76,12 +76,16 @@ jerry_value_t isr_script_call(jerry_value_t module, struct question *question) {
 	jerry_value_t questiono = isr_script_object_question(question);
 	if (jerry_value_is_exception(questiono)) return questiono;
 
-	jerry_value_t args[] = { questiono };
-	jerry_size_t argscnt = 1;
+	jerry_value_t stateo = isr_script_state(providers, providers_size);
+	if (jerry_value_is_exception(stateo)) return stateo;
+
+	jerry_value_t args[] = { questiono, stateo };
+	jerry_size_t argscnt = 2;
 
 	jerry_value_t ret = jerry_call(resolve, jerry_undefined(), args, argscnt);
 	jerry_value_free(resolve);
 	jerry_value_free(questiono);
+	jerry_value_free(stateo);
 	return ret;
 }
 
@@ -110,12 +114,14 @@ jerry_value_t isr_script_result_constructors(jerry_value_t *answerc, jerry_value
 }
 
 struct resolve_result *isr_result_fallback(jerry_value_t exception) {
-	jerry_value_t str = jerry_value_to_string(jerry_exception_value(exception, true));
+	jerry_value_t exception_val = jerry_exception_value(exception, true);
+	jerry_value_t str = jerry_value_to_string(exception_val);
+	jerry_value_free(exception_val);
 	jerry_size_t strsize = jerry_string_size(str, JERRY_ENCODING_UTF8);
 	jerry_char_t *buff = malloc(strsize * sizeof(jerry_char_t));
 	jerry_size_t buffsize = jerry_string_to_buffer(str, JERRY_ENCODING_UTF8, buff, jerry_string_size(str, JERRY_ENCODING_UTF8));
 	buff[buffsize] = '\0';
-	printf("%s\n", buff);
+	printf("isr: isr.js: %s\n", buff);
 	free(buff);
 
 	struct resolve_result *ret = malloc(sizeof(struct resolve_result));
@@ -208,8 +214,8 @@ struct resolve_result *isr_from_call_result(jerry_value_t call_result, jerry_val
 	}
 }
 
-struct resolve_result *isr_script_run(jerry_value_t module, struct question *question) {
-	jerry_value_t called = isr_script_call(module, question);
+struct resolve_result *isr_script_run(jerry_value_t module, struct question *question, struct state_provider **providers, size_t providers_size) {
+	jerry_value_t called = isr_script_call(module, question, providers, providers_size);
 	if (jerry_value_is_exception(called)) return isr_result_fallback(called);
 
 	jerry_value_t answerc, forwardc;

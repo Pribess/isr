@@ -1,17 +1,21 @@
 export class StateProvider {
-    static #providers = new Map();
+    static #providers = new Object();
 
     static register(name, provider) {
         // TODO: filter if name is a possible js property name?
-        if (this.#providers.has(name)) {
-            this.#providers.get(name).push(provider);
+        if (this.#providers.hasOwnProperty(name)) {
+            this.#providers[name].push(provider);
         } else {
-            this.#providers.set(name, [provider]);
+            this.#providers[name] = [provider];
         }
     }
 
+	static getProviders() {
+		return this.#providers;
+	}
+
     constructor(enableCallback, dataCallback) {
-        self.enableCallback = enableCallback;
-        self.dataCallback = dataCallback;
+        this.enableCallback = enableCallback;
+        this.dataCallback = dataCallback;
     }
 }

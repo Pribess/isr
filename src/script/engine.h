@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include "module.h"
+#include "state.h"
 #include "../packet/question.h"
 
 unsigned char *isr_from_jerry_typedarray(jerry_value_t jerry_typedarray, uint16_t *length);
@@ -37,6 +38,6 @@ struct resolve_result {
 
 jerry_value_t isr_script_evaluate(const jerry_char_t *script, size_t script_size);
 
-struct resolve_result *isr_script_run(jerry_value_t module, struct question *question);
+struct resolve_result *isr_script_run(jerry_value_t module, struct question *question, struct state_provider **providers, size_t providers_size);
 
 #endif

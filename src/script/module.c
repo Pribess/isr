@@ -92,8 +92,10 @@ bool isr_module_resolve_file(const jerry_value_t canonical_name, jerry_value_t *
 	buff[size] = '\0';
 
 	FILE *file = fopen((char *)buff, "r");
-	if (file == NULL) 
+	if (file == NULL) {
+		printf("isr: can't open %s\n", buff);
 		return false;
+	}
 
 	fseek(file, 0L, SEEK_END);
 	long sz = ftell(file);
@@ -111,6 +113,16 @@ bool isr_module_resolve_file(const jerry_value_t canonical_name, jerry_value_t *
 		*result = ret;
 		return true;
 	}
+
+	jerry_value_t exception_val = jerry_exception_value(ret, true);
+	jerry_value_t str = jerry_value_to_string(exception_val);
+	jerry_value_free(exception_val);
+	jerry_size_t strsize = jerry_string_size(str, JERRY_ENCODING_UTF8);
+	jerry_char_t *err = malloc(strsize * sizeof(jerry_char_t));
+	jerry_size_t errsize = jerry_string_to_buffer(str, JERRY_ENCODING_UTF8, buff, jerry_string_size(str, JERRY_ENCODING_UTF8));
+	err[errsize] = '\0';
+	printf("isr: %s: %s\n", buff, err);
+	free(err);
 
 	return false;
 }
