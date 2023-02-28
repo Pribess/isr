@@ -21,7 +21,7 @@ $(TARGET) : $(notdir $(OBJECTS))
 
 js:
 	cd src/script/js && $(MAKE) all
-	rm module.o
+	rm -f module.o
 
 debug: all
 debug: CFLAGS += -g
