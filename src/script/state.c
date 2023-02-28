@@ -66,7 +66,7 @@ bool isr_script_register_state_by_name(const jerry_value_t name, const jerry_val
 
 	struct state_provider *provider = NULL;
 
-	bool foreached = jerry_object_foreach(value, &isr_script_register_state_maybe, &provider);
+	jerry_object_foreach(value, &isr_script_register_state_maybe, &provider);
 
 	if (provider == NULL) {
 		printf("isr: no valid StateProvider found for name %s\n", path_str);
@@ -112,7 +112,7 @@ struct state_provider **isr_script_state_providers(size_t *size) {
 
 	struct state_providers_and_size data = { .providers = ret, .size = size };
 
-	bool foreached = jerry_object_foreach(providers, &isr_script_register_state_by_name, &data);
+	jerry_object_foreach(providers, &isr_script_register_state_by_name, &data);
 	jerry_value_free(providers);
 
 	return ret;
