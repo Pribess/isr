@@ -35,7 +35,7 @@ char **isr_script_state_path(jerry_char_t *path_str, jerry_size_t path_str_size,
 	return ret;
 }
 
-bool isr_script_register_state_maybe(const jerry_value_t name, const jerry_value_t value, void *user_data) {
+bool isr_script_register_state(const jerry_value_t name, const jerry_value_t value, void *user_data) {
 	jerry_value_t enable_cb = jerry_object_get_sz(value, "enableCallback");
 	jerry_value_t data_cb = jerry_object_get_sz(value, "dataCallback");
 
@@ -47,12 +47,15 @@ bool isr_script_register_state_maybe(const jerry_value_t name, const jerry_value
 			|| !jerry_value_to_boolean(enable))
 		return true;
 
-	*(struct state_provider **)user_data = malloc(sizeof(struct state_provider));
-	struct state_provider *provider = *(struct state_provider **)user_data;
-
+	struct state_providers_and_size *data = user_data;
+	
+	struct state_provider *provider = malloc(sizeof(struct state_provider));
 	provider->callback = data_cb;
 
-	return false;
+	data->providers[*data->size] = provider;
+	*data->size += 1;
+
+	return true;
 }
 
 
@@ -64,20 +67,19 @@ bool isr_script_register_state_by_name(const jerry_value_t name, const jerry_val
 	jerry_size_t copied = jerry_string_to_buffer(name, JERRY_ENCODING_UTF8, path_str, path_str_size);
 	path_str[copied] = '\0';
 
-	struct state_provider *provider = NULL;
+	size_t state_providers_size_pre = *data->size;
+	jerry_object_foreach(value, &isr_script_register_state, data);
 
-	jerry_object_foreach(value, &isr_script_register_state_maybe, &provider);
-
-	if (provider == NULL) {
+	if (*data->size == state_providers_size_pre) {
 		printf("isr: no valid StateProvider found for name %s\n", path_str);
 		return true;
 	}
 
-	provider->path = isr_script_state_path(path_str, copied, &provider->path_length);
+	struct state_provider *first = data->providers[state_providers_size_pre];
+	first->is_first = true;
+	first->path = isr_script_state_path(path_str, copied, &first->path_length);
 	free(path_str);
 
-	data->providers[*data->size] = provider;
-	*data->size += 1;
 	return true;
 }
 
@@ -140,13 +142,24 @@ void isr_script_set_data_on_path(char **path, size_t path_length, jerry_value_t 
 jerry_value_t isr_script_object_state(struct state_provider **providers, size_t size) {
 	jerry_value_t ret = jerry_object();
 
+	struct state_provider *current_first = NULL;
+	bool current_loaded = false;
 	for (int i = 0; i < size; i++) {
 		struct state_provider *provider = providers[i];
+
+		if (provider->is_first) {
+			current_first = provider;
+			current_loaded = false;
+		}
+
+		if (current_loaded) 
+			continue;
 
 		jerry_value_t data = jerry_call(provider->callback, jerry_undefined(), NULL, 0);
 		if (jerry_value_is_exception(data)) continue;
 
-		isr_script_set_data_on_path(provider->path, provider->path_length, ret, data);
+		isr_script_set_data_on_path(current_first->path, current_first->path_length, ret, data);
+		current_loaded = true;
 	}
 
 	return ret;

@@ -18,6 +18,7 @@ struct state_provider {
 	jerry_value_t callback;
 	char **path;
 	size_t path_length;
+	bool is_first;
 };
 
 struct state_provider **isr_script_state_providers(size_t *size);
