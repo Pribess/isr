@@ -115,6 +115,8 @@ struct state_provider **isr_script_state_providers(size_t *size) {
 	jerry_object_foreach(providers, &isr_script_register_state_by_name, &data);
 	jerry_value_free(providers);
 
+	ret = realloc(ret, *data.size * sizeof(struct state_provider));
+
 	return ret;
 }
 
