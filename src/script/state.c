@@ -45,7 +45,7 @@ bool isr_script_register_state(const jerry_value_t name, const jerry_value_t val
 	if (jerry_value_is_exception(enable)
 			|| !jerry_value_is_boolean(enable)
 			|| !jerry_value_to_boolean(enable))
-		return true;
+		goto free_enable;
 
 	struct state_providers_and_size *data = user_data;
 	
@@ -54,6 +54,10 @@ bool isr_script_register_state(const jerry_value_t name, const jerry_value_t val
 
 	data->providers[*data->size] = provider;
 	*data->size += 1;
+
+free_enable:
+	jerry_value_free(enable);
+	jerry_value_free(data_cb);
 
 	return true;
 }
@@ -84,40 +88,47 @@ bool isr_script_register_state_by_name(const jerry_value_t name, const jerry_val
 }
 
 struct state_provider **isr_script_state_providers(size_t *size) {
+	struct state_provider **ret = NULL;
+
 	jerry_value_t state_module = isr_module_state();
-	if (jerry_value_is_exception(state_module)) return NULL;
+	if (jerry_value_is_exception(state_module)) goto free_state_module;
 
 	jerry_value_t namespace = jerry_module_namespace(state_module);
-	jerry_value_free(state_module);
 
 	jerry_value_t state_provider_class = jerry_object_get_sz(namespace, "StateProvider");
-	jerry_value_free(namespace);
-	if (jerry_value_is_exception(state_provider_class)) return NULL;
+	if (jerry_value_is_exception(state_provider_class)) goto free_state_provider_class;
 
 	jerry_value_t get_providers = jerry_object_get_sz(state_provider_class, "getProviders");
-	if (jerry_value_is_exception(get_providers)) return NULL;
+	if (jerry_value_is_exception(get_providers)) goto free_get_providers;
 
 	jerry_value_t providers = jerry_call(get_providers, state_provider_class, NULL, 0);
-	jerry_value_free(state_provider_class);
-	if (jerry_value_is_exception(providers)) return NULL;
+	if (jerry_value_is_exception(providers)) goto free_providers;
 
 	jerry_value_t providers_keys = jerry_object_keys(providers);
-	if (jerry_value_is_exception(providers_keys)) {
-		jerry_value_free(providers);
-		return NULL;
-	}
+	if (jerry_value_is_exception(providers_keys)) goto free_providers_keys;
+
 
 	uint32_t providers_size = jerry_array_length(providers_keys);
-	jerry_value_free(providers_keys);
-	struct state_provider **ret = malloc(providers_size * sizeof(struct state_provider));
+	ret = malloc(providers_size * sizeof(struct state_provider));
 	*size = 0;
 
 	struct state_providers_and_size data = { .providers = ret, .size = size };
 
 	jerry_object_foreach(providers, &isr_script_register_state_by_name, &data);
-	jerry_value_free(providers);
 
 	ret = realloc(ret, *data.size * sizeof(struct state_provider));
+
+free_providers_keys:
+	jerry_value_free(providers_keys);
+free_providers:
+	jerry_value_free(providers);
+free_get_providers:
+	jerry_value_free(get_providers);
+free_state_provider_class:
+	jerry_value_free(state_provider_class);
+	jerry_value_free(namespace);
+free_state_module:
+	jerry_value_free(state_module);
 
 	return ret;
 }
@@ -126,16 +137,21 @@ void isr_script_set_data_on_path(char **path, size_t path_length, jerry_value_t 
 	char *path_part = path[0];
 
 	if (path_length == 1) {
-		jerry_object_set_sz(on, path_part, data);
+		jerry_value_t setr = jerry_object_set_sz(on, path_part, data);
+		jerry_value_free(setr);
 	} else {
 		jerry_value_t new_on = jerry_object_get_sz(on, path_part);
 
 		if (jerry_value_is_exception(new_on) || jerry_value_is_undefined(new_on)) {
-			jerry_object_set_sz(on, path_part, jerry_object());
+			jerry_value_t obj = jerry_object();
+			jerry_object_set_sz(on, path_part, obj);
+			jerry_value_free(obj);
 			isr_script_set_data_on_path(path + 1, path_length - 1, jerry_object_get_sz(on, path_part), data);
 		} else {
 			isr_script_set_data_on_path(path + 1, path_length - 1, new_on, data);
 		}
+
+		jerry_value_free(new_on);
 	}
 }
 
@@ -156,10 +172,13 @@ jerry_value_t isr_script_object_state(struct state_provider **providers, size_t 
 			continue;
 
 		jerry_value_t data = jerry_call(provider->callback, jerry_undefined(), NULL, 0);
-		if (jerry_value_is_exception(data)) continue;
+		if (jerry_value_is_exception(data)) goto free_data;
 
 		isr_script_set_data_on_path(current_first->path, current_first->path_length, ret, data);
 		current_loaded = true;
+
+free_data:
+		jerry_value_free(data);
 	}
 
 	return ret;

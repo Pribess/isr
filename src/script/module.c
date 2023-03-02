@@ -26,6 +26,7 @@ bool isr_module_resolve_native(const jerry_value_t canonical_name, jerry_value_t
 			*result = ret;
 			return true;
 		}
+		jerry_value_free(ret);
 	}
 
 	return false;
@@ -45,30 +46,35 @@ bool isr_module_resolve_compiled_in(const jerry_value_t canonical_name, jerry_va
 			*result = ret;
 			return true;
 		}
+		jerry_value_free(ret);
 	} else if (strcmp((char *) buff, "result.js") == 0) {
 		jerry_value_t ret = jerry_parse(result_js, result_js_len, &opts);
 		if (!jerry_value_is_exception(ret)) {
 			*result = ret;
 			return true;
 		}
+		jerry_value_free(ret);
 	} else if (strcmp((char *) buff, "state.js") == 0) {
 		jerry_value_t ret = jerry_parse(state_js, state_js_len, &opts);
 		if (!jerry_value_is_exception(ret)) {
 			*result = ret;
 			return true;
 		}
+		jerry_value_free(ret);
 	} else if (strcmp((char *) buff, "type.js") == 0) {
 		jerry_value_t ret = jerry_parse(type_js, type_js_len, &opts);
 		if (!jerry_value_is_exception(ret)) {
 			*result = ret;
 			return true;
 		}
+		jerry_value_free(ret);
 	} else if (strcmp((char *) buff, "util.js") == 0) {
 		jerry_value_t ret = jerry_parse(util_js, util_js_len, &opts);
 		if (!jerry_value_is_exception(ret)) {
 			*result = ret;
 			return true;
 		}
+		jerry_value_free(ret);
 	}
 
 	return false;
@@ -113,6 +119,7 @@ bool isr_module_resolve_file(const jerry_value_t canonical_name, jerry_value_t *
 		*result = ret;
 		return true;
 	}
+	jerry_value_free(ret);
 
 	jerry_value_t exception_val = jerry_exception_value(ret, true);
 	jerry_value_t str = jerry_value_to_string(exception_val);
@@ -122,6 +129,8 @@ bool isr_module_resolve_file(const jerry_value_t canonical_name, jerry_value_t *
 	jerry_size_t errsize = jerry_string_to_buffer(str, JERRY_ENCODING_UTF8, buff, jerry_string_size(str, JERRY_ENCODING_UTF8));
 	err[errsize] = '\0';
 	printf("isr: %s: %s\n", buff, err);
+
+	jerry_value_free(str);
 	free(err);
 
 	return false;
@@ -151,7 +160,9 @@ const jerryx_module_resolver_t **isr_module_resolvers(size_t *count) {
 jerry_value_t isr_module_resolve_callback(const jerry_value_t specifier, const jerry_value_t referrer, void *user_p) {
 	size_t count;
 	const jerryx_module_resolver_t **resolvers = isr_module_resolvers(&count);
-	return jerryx_module_resolve(specifier, resolvers, count);
+	jerry_value_t ret = jerryx_module_resolve(specifier, resolvers, count);
+
+	return ret;
 }
 
 jerry_value_t isr_module_result() {
