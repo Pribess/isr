@@ -35,11 +35,14 @@ jerry_value_t isr_module_native_encode() {
 	jerry_value_t ret = jerry_native_module(NULL, exports, 1);
 
 	jerry_value_t val0 = jerry_function_external(&isr_native_encode);
-	if (jerry_value_is_exception(val0)) return val0;
+	if (jerry_value_is_exception(val0)) { ret = val0; goto free_pre_val0; }
 	jerry_value_t set0 = jerry_native_module_set(ret, exports[0], val0);
-	if (jerry_value_is_exception(set0)) return set0;
+	if (jerry_value_is_exception(set0)) { ret = set0; goto free_pre_set0; }
+
 	jerry_value_free(set0);
+free_pre_set0:
 	jerry_value_free(val0);
+free_pre_val0:
 	jerry_value_free(exports[0]);
 
 	return ret;
